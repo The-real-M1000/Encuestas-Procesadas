@@ -86,7 +86,7 @@ footer{border-top:1px solid var(--line);padding:16px;text-align:center;color:var
 <div id="intro" role="status" aria-label="Cargando encuestas">
   <div class="frame"><img id="intimg" alt="" hidden></div>
   <div class="bar2"><i id="inbar"></i></div>
-  <p class="line" id="inline">&gt; leyendo encuestas<span class="cursor" aria-hidden="true"></span></p>
+  <p class="line" id="inline">&gt; Escuchando a los estudiantes<span class="cursor" aria-hidden="true"></span></p>
   <span class="skip">toca para saltar</span>
 </div>
 <header>
@@ -103,7 +103,7 @@ footer{border-top:1px solid var(--line);padding:16px;text-align:center;color:var
   <p class="meta" id="meta"></p>
   <div class="grid" id="grid"></div>
 </main>
-<footer>fin del listado</footer>
+<footer>Vota por Jatdiel Mideros</footer>
 
 <div id="viewer" role="dialog" aria-modal="true" aria-label="Visor de imágenes">
   <div class="vtop"><span id="vname"></span><button class="btn" id="close" type="button" aria-label="Cerrar visor">[ cerrar ]</button></div>
@@ -249,7 +249,7 @@ function endIntro(){
   setTimeout(() => intro.remove(), 600);
 }
 intro.addEventListener("click", endIntro);
-setTimeout(endIntro, 9000); // seguro
+setTimeout(endIntro, 7000); // seguro
 
 async function playIntro(){
   const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -260,7 +260,7 @@ async function playIntro(){
   // espera a que carguen las primeras (máx 2.5 s)
   await Promise.race([
     Promise.all(imgs.slice(0, 6).map(im => im.decode ? im.decode().catch(()=>{}) : Promise.resolve())),
-    new Promise(r => setTimeout(r, 2500))
+    new Promise(r => setTimeout(r, 1500))
   ]);
   const el = $("intimg"), bar = $("inbar"), line = $("inline");
   el.hidden = false;
