@@ -73,7 +73,7 @@ footer{border-top:1px solid var(--line);padding:16px;text-align:center;color:var
 <body>
 <header>
   <div class="bar">
-    <p class="prompt"><span class="dim">usuario@r2</span>:~/galeria$ ls<span class="cursor" aria-hidden="true"></span></p>
+    <p class="prompt"><span class="dim">Jatdiel Mideros/Personero</span>:~/galeria$ ls<span class="cursor" aria-hidden="true"></span></p>
     <div class="actions">
       <button class="btn" id="shuffle" type="button">[ shuffle ]</button>
       <button class="btn" id="excel" type="button">[ descargar excel ]</button>
@@ -145,7 +145,7 @@ async function init(){
     return;
   }
   if(!files.length){ meta.textContent = "no se encontraron imágenes en el repo"; return; }
-  meta.textContent = files.length + " archivos · origen: github/" + CONFIG.repo;
+  meta.textContent = files.length + " archivos · origen: La voz de los estudiantes";
   for(let n = 1; n <= total(); n++){
     const b = document.createElement("button");
     b.className = "item"; b.type = "button";
