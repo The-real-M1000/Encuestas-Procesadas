@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>galeria — terminal</title>
+<title>Personero — La voz de los estudiantes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -68,12 +68,30 @@ footer{border-top:1px solid var(--line);padding:16px;text-align:center;color:var
   .actions{width:100%}.actions .btn{flex:1}
 }
 @media (prefers-reduced-motion:reduce){.cursor{animation:none}*{transition:none!important}}
+
+/* intro */
+#intro{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding:env(safe-area-inset-top,0px) 16px env(safe-area-inset-bottom,0px);transition:opacity .5s}
+#intro.out{opacity:0;pointer-events:none}
+#intro .frame{width:min(86vw,560px);aspect-ratio:4/3;border:1px solid var(--red);background:var(--panel);overflow:hidden;position:relative}
+#intro .frame img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.8) contrast(1.05)}
+#intro .frame::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(13,8,9,.28) 0 1px,transparent 1px 3px);pointer-events:none}
+#intro .line{margin:0;font-size:13px;color:var(--dim);text-align:center;max-width:90vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#intro .bar2{width:min(86vw,560px);height:3px;background:var(--line)}
+#intro .bar2 i{display:block;height:100%;width:0;background:var(--red)}
+#intro .skip{font-size:12px;color:var(--faint)}
 </style>
 </head>
 <body>
+<div id="intro" role="status" aria-label="Cargando encuestas">
+  <div class="frame"><img id="intimg" alt="" hidden></div>
+  <div class="bar2"><i id="inbar"></i></div>
+  <p class="line" id="inline">&gt; leyendo encuestas<span class="cursor" aria-hidden="true"></span></p>
+  <span class="skip">toca para saltar</span>
+</div>
 <header>
   <div class="bar">
-    <p class="prompt"><span class="dim">Jatdiel Mideros/Personero</span>:~/galeria$ ls<span class="cursor" aria-hidden="true"></span></p>
+    <p class="prompt"><span class="dim">Jatdiel Mideros</span>:~/Personero$ ls<span class="cursor" aria-hidden="true"></span></p>
     <div class="actions">
       <button class="btn" id="shuffle" type="button">[ shuffle ]</button>
       <button class="btn" id="excel" type="button">[ descargar excel ]</button>
@@ -141,7 +159,7 @@ async function init(){
     const x = paths.find(p => /\.xlsx?$/i.test(p));
     excelFile = x ? { path: x, url: rawUrl(x) } : null;
   } catch(err){
-    meta.textContent = "error al leer el repo (" + err.message + "). Si es el límite de la API, espera unos minutos y recarga.";
+    endIntro(); meta.textContent = "error al leer el repo (" + err.message + "). Si es el límite de la API, espera unos minutos y recarga.";
     return;
   }
   if(!files.length){ meta.textContent = "no se encontraron imágenes en el repo"; return; }
@@ -221,7 +239,46 @@ $("stage").addEventListener("touchend", e => {
   if(Math.abs(dx) > 50) show(current + (dx < 0 ? 1 : -1));
 });
 
-init();
+
+/* ===== intro: encuestas pasando rápido ===== */
+const intro = $("intro");
+let introDone = false;
+function endIntro(){
+  if(introDone) return; introDone = true;
+  intro.classList.add("out");
+  setTimeout(() => intro.remove(), 600);
+}
+intro.addEventListener("click", endIntro);
+setTimeout(endIntro, 9000); // seguro
+
+async function playIntro(){
+  const reduce = matchMedia("(prefers-reduced-motion:reduce)").matches;
+  if(reduce || !files.length) return endIntro();
+  const N = Math.min(36, files.length);
+  const picks = Array.from({length:N}, (_, i) => Math.floor(i * files.length / N) + 1);
+  const imgs = picks.map(n => { const im = new Image(); im.src = src(n); return im; });
+  // espera a que carguen las primeras (máx 2.5 s)
+  await Promise.race([
+    Promise.all(imgs.slice(0, 6).map(im => im.decode ? im.decode().catch(()=>{}) : Promise.resolve())),
+    new Promise(r => setTimeout(r, 2500))
+  ]);
+  const el = $("intimg"), bar = $("inbar"), line = $("inline");
+  el.hidden = false;
+  let i = 0;
+  await new Promise(res => {
+    const t = setInterval(() => {
+      if(introDone || i >= N){ clearInterval(t); return res(); }
+      el.src = imgs[i].src;
+      bar.style.width = ((i + 1) / N * 100) + "%";
+      line.textContent = "> encuesta " + String(picks[i]).padStart(3,"0") + " / " + String(files.length).padStart(3,"0");
+      i++;
+    }, 75);
+  });
+  line.textContent = "> " + files.length + " encuestas cargadas";
+  setTimeout(endIntro, 350);
+}
+
+init().then(playIntro);
 </script>
 </body>
 </html>
